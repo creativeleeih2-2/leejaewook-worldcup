@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>이재욱 이상형 월드컵</title>
+
+<style>
+:root{
+  --bg:#0b0b10;
+  --card:#14141c;
+  --line:rgba(255,255,255,.14);
+  --txt:#fff;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--txt);
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+  overflow-x:hidden;
+}
+
+/* ===== 기본 레이아웃 (모바일) ===== */
+.wrap{
+  padding:14px;
+  max-width:480px;
+  margin:0 auto;
+}
+
+h1{
+  text-align:center;
+  font-size:22px;
+  margin:6px 0 4px;
+  font-weight:900;
+}
+
+.sub{
+  text-align:center;
+  font-size:12px;
+  opacity:.7;
+  margin-bottom:10px;
+}
+
+.status{
+  text-align:center;
+  font-size:12px;
+  opacity:.8;
+  margin-bottom:10px;
+}
+
+/* ===== 매치 ===== */
+.match{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.card{
+  background:var(--card);
+  border-radius:18px;
+  overflow:hidden;
+  border:1px solid var(--line);
+  cursor:pointer;
+  transition:.15s;
+}
+
+.card:active{
+  transform:scale(.97);
+}
+
+.img{
+  width:100%;
+  height:52vh;
+  object-fit:cover;
+  background:#000;
+}
+
+.info{
+  padding:12px;
+}
+
+.work{
+  font-size:11px;
+  opacity:.65;
+}
+
+.role{
+  font-size:18px;
+  font-weight:900;
+  margin-top:4px;
+}
+
+.tag{
+  margin-top:8px;
+  display:inline-block;
+  padding:5px 10px;
+  border-radius:999px;
+  font-size:11px;
+  border:1px solid rgba(255,255,255,.2);
+  opacity:.85;
+}
+
+/* ===== 우승 오버레이 ===== */
+.overlay{
+  position:fixed;
+  inset:0;
+  background:#000;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:100;
+  animation:flash .35s ease-out;
+}
+
+@keyframes flash{
+  from{background:#fff}
+  to{background:#000}
+}
+
+.winnerWrap{
+  width:100%;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+}
+
+.winnerImg{
+  flex:1;
+  object-fit:cover;
+  animation:zoomIn .8s cubic-bezier(.2,1,.3,1);
+}
+
+@keyframes zoomIn{
+  from{transform:scale(1.4)}
+  to{transform:scale(1)}
+}
+
+.winnerInfo{
+  padding:16px;
+  text-align:center;
+  background:linear-gradient(to top, rgba(0,0,0,.85), transparent);
+  transform:translateY(40px);
+  animation:slideUp .6s ease-out .4s forwards;
+}
+
+@keyframes slideUp{
+  to{transform:translateY(0)}
+}
+
+.babam{
+  font-size:28px;
+  font-weight:1000;
+  margin-bottom:6px;
+  animation:shake 1s infinite;
+}
+
+@keyframes shake{
+  0%,100%{transform:rotate(-2deg)}
+  50%{transform:rotate(2deg)}
+}
+
+.winnerName{
+  font-size:26px;
+  font-weight:1000;
+}
+
+.winnerWork{
+  font-size:13px;
+  opacity:.75;
+  margin-top:4px;
+}
+
+.btn{
+  margin-top:14px;
+  padding:12px 18px;
+  border-radius:14px;
+  border:none;
+  font-weight:900;
+  cursor:pointer;
+}
+
+/* ===== 컨페티 ===== */
+#confetti{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  display:none;
+  z-index:200;
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrap">
+  <h1>이재욱 이상형 월드컵</h1>
+  <div class="sub">고른 캐릭터가 계속 남는 방식</div>
+  <div class="status" id="status">로딩중…</div>
+
+  <div class="match">
+    <div class="card" id="cardA">
+      <img class="img" id="imgA">
+      <div class="info">
+        <div class="work" id="workA"></div>
+        <div class="role" id="roleA"></div>
+        <div class="tag">👑 챔피언</div>
+      </div>
+    </div>
+
+    <div class="card" id="cardB">
+      <img class="img" id="imgB">
+      <div class="info">
+        <div class="work" id="workB"></div>
+        <div class="role" id="roleB"></div>
+        <div class="tag">⚔️ 도전자</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<canvas id="confetti"></canvas>
+
+<div class="overlay" id="overlay">
+  <div class="winnerWrap">
+    <img class="winnerImg" id="winnerImg">
+    <div class="winnerInfo">
+      <div class="babam">🎉 빠——밤!!! 🎉</div>
+      <div class="winnerName" id="winnerName"></div>
+      <div class="winnerWork" id="winnerWork"></div>
+      <button class="btn" onclick="start()">다시하기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const CANDIDATES = [
+ {work:"알함브라 궁전의 추억", role:"마르꼬", img:"images/marco.jpg"},
+ {work:"검색어를 입력하세요 WWW", role:"설지환", img:"images/seoljihwan.jpg"},
+ {work:"어쩌다 발견한 하루", role:"백경", img:"images/baekgyeong.jpg"},
+ {work:"날씨가 좋으면 찾아가겠어요", role:"이장우", img:"images/leejangwoo.jpg"},
+ {work:"도도솔솔라라솔", role:"선우준", img:"images/seonwoojun.jpg"},
+ {work:"환혼 1,2", role:"장욱", img:"images/janguuk.jpg"},
+ {work:"로얄로더", role:"한태오", img:"images/hantaeo.jpg"},
+ {work:"탄금", role:"홍랑", img:"images/hongrang.jpg"},
+ {work:"마지막 썸머", role:"백도하", img:"images/baekdoha.jpg"},
+ {work:"언니네 산지직송", role:"이재욱 (본체)", img:"images/jaewook_real.jpg"}
+];
+
+let champion, queue, challenger;
+
+function shuffle(a){
+ return [...a].sort(()=>Math.random()-0.5);
+}
+
+function start(){
+ document.getElementById("overlay").style.display="none";
+ stopConfetti();
+
+ const s = shuffle(CANDIDATES);
+ champion = s[0];
+ queue = s.slice(1);
+ next();
+}
+
+function next(){
+ if(queue.length===0){
+   win();
+   return;
+ }
+ challenger = queue.shift();
+ render();
+ document.getElementById("status").innerText =
+   `남은 도전자 ${queue.length}명`;
+}
+
+function render(){
+ imgA.src = champion.img;
+ workA.innerText = champion.work;
+ roleA.innerText = champion.role;
+
+ imgB.src = challenger.img;
+ workB.innerText = challenger.work;
+ roleB.innerText = challenger.role;
+}
+
+cardA.onclick = ()=> next();
+cardB.onclick = ()=>{
+ champion = challenger;
+ next();
+};
+
+function win(){
+ document.getElementById("winnerImg").src = champion.img;
+ document.getElementById("winnerName").innerText = champion.role;
+ document.getElementById("winnerWork").innerText = champion.work;
+ document.getElementById("overlay").style.display="flex";
+ startConfetti();
+}
+
+/* ===== 컨페티 ===== */
+let raf;
+function startConfetti(){
+ const c = document.getElementById("confetti");
+ c.style.display="block";
+ const ctx = c.getContext("2d");
+
+ function resize(){
+   c.width = innerWidth;
+   c.height = innerHeight;
+ }
+ resize();
+
+ const pieces = Array.from({length:260},()=>({
+   x:Math.random()*c.width,
+   y:Math.random()*-c.height,
+   vy:3+Math.random()*4,
+   size:6+Math.random()*8,
+   hue:Math.random()*360
+ }));
+
+ function draw(){
+   ctx.clearRect(0,0,c.width,c.height);
+   pieces.forEach(p=>{
+     p.y += p.vy;
+     ctx.fillStyle = `hsl(${p.hue},90%,60%)`;
+     ctx.fillRect(p.x,p.y,p.size,p.size);
+     if(p.y>c.height) p.y=-20;
+   });
+   raf=requestAnimationFrame(draw);
+ }
+ draw();
+
+ setTimeout(stopConfetti, 2600);
+}
+
+function stopConfetti(){
+ cancelAnimationFrame(raf);
+ document.getElementById("confetti").style.display="none";
+}
+
+start();
+</script>
+
+</body>
+</html>
