@@ -22,17 +22,17 @@ body{
   overflow-x:hidden;
 }
 
-/* ===== 기본 레이아웃 (모바일) ===== */
+/* ===== 기본 레이아웃 (모바일 우선) ===== */
 .wrap{
   padding:14px;
-  max-width:480px;
+  max-width:520px;
   margin:0 auto;
 }
 
 h1{
   text-align:center;
   font-size:22px;
-  margin:6px 0 4px;
+  margin:8px 0 4px;
   font-weight:900;
 }
 
@@ -46,15 +46,15 @@ h1{
 .status{
   text-align:center;
   font-size:12px;
-  opacity:.8;
+  opacity:.85;
   margin-bottom:10px;
 }
 
-/* ===== 매치 ===== */
+/* ===== 매치 (모바일: 위/아래 두 카드가 한 화면에 들어오게) ===== */
 .match{
   display:flex;
   flex-direction:column;
-  gap:12px;
+  gap:8px;
 }
 
 .card{
@@ -66,18 +66,20 @@ h1{
   transition:.15s;
 }
 
-.card:active{
-  transform:scale(.97);
-}
+.card:active{transform:scale(.97)}
 
 .img{
   width:100%;
-  height:32vh;
+  height:32vh;          /* ✅ 핵심: 한 화면에 2장 보이도록 줄임 */
+  min-height:180px;     /* 너무 작은 폰에서도 안전장치 */
+  max-height:260px;     /* 큰 폰에서도 과하게 커지지 않게 */
   object-fit:cover;
+  display:block;
+  background:#000;
 }
 
 .info{
-  padding:12px;
+  padding:8px 10px;     /* ✅ 여백 줄임 */
 }
 
 .work{
@@ -101,7 +103,29 @@ h1{
   opacity:.85;
 }
 
-/* ===== 우승 오버레이 ===== */
+/* ===== 데스크탑에서만 좌우 배치로 보기 좋게 ===== */
+@media (min-width: 900px){
+  .wrap{max-width:980px;padding:22px}
+  h1{font-size:28px}
+  .sub{font-size:13px}
+  .match{
+    display:grid;
+    grid-template-columns:1fr 90px 1fr;
+    gap:14px;
+    align-items:stretch;
+  }
+  .vs{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:1000;
+    opacity:.75;
+    letter-spacing:.08em;
+  }
+  .img{height:420px;max-height:none}
+}
+
+/* ===== 우승 오버레이 (빠밤 강조) ===== */
 .overlay{
   position:fixed;
   inset:0;
@@ -127,20 +151,21 @@ h1{
 
 .winnerImg{
   flex:1;
+  width:100%;
   object-fit:cover;
   animation:zoomIn .8s cubic-bezier(.2,1,.3,1);
 }
 
 @keyframes zoomIn{
-  from{transform:scale(1.4)}
+  from{transform:scale(1.45)}
   to{transform:scale(1)}
 }
 
 .winnerInfo{
   padding:16px;
   text-align:center;
-  background:linear-gradient(to top, rgba(0,0,0,.85), transparent);
-  transform:translateY(40px);
+  background:linear-gradient(to top, rgba(0,0,0,.88), transparent);
+  transform:translateY(46px);
   animation:slideUp .6s ease-out .4s forwards;
 }
 
@@ -149,15 +174,16 @@ h1{
 }
 
 .babam{
-  font-size:28px;
+  font-size:30px;
   font-weight:1000;
   margin-bottom:6px;
-  animation:shake 1s infinite;
+  text-shadow:0 0 18px rgba(255,255,255,.25);
+  animation:shake .75s ease-in-out infinite;
 }
 
 @keyframes shake{
-  0%,100%{transform:rotate(-2deg)}
-  50%{transform:rotate(2deg)}
+  0%,100%{transform:rotate(-2deg) scale(1)}
+  50%{transform:rotate(2deg) scale(1.05)}
 }
 
 .winnerName{
@@ -167,18 +193,28 @@ h1{
 
 .winnerWork{
   font-size:13px;
-  opacity:.75;
+  opacity:.78;
   margin-top:4px;
 }
 
-.btn{
+.btnRow{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
   margin-top:14px;
+}
+
+.btn{
   padding:12px 18px;
   border-radius:14px;
   border:none;
   font-weight:900;
   cursor:pointer;
 }
+
+.btnPrimary{background:#fff;color:#111}
+.btnGhost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.25)}
 
 /* ===== 컨페티 ===== */
 #confetti{
@@ -192,15 +228,14 @@ h1{
 </head>
 
 <body>
-
 <div class="wrap">
   <h1>이재욱 이상형 월드컵</h1>
   <div class="sub">고른 캐릭터가 계속 남는 방식</div>
   <div class="status" id="status">로딩중…</div>
 
   <div class="match">
-    <div class="card" id="cardA">
-      <img class="img" id="imgA">
+    <div class="card" id="cardA" title="챔피언 선택(유지)">
+      <img class="img" id="imgA" alt="">
       <div class="info">
         <div class="work" id="workA"></div>
         <div class="role" id="roleA"></div>
@@ -208,8 +243,10 @@ h1{
       </div>
     </div>
 
-    <div class="card" id="cardB">
-      <img class="img" id="imgB">
+    <div class="vs" style="display:none">VS</div>
+
+    <div class="card" id="cardB" title="도전자 선택(교체)">
+      <img class="img" id="imgB" alt="">
       <div class="info">
         <div class="work" id="workB"></div>
         <div class="role" id="roleB"></div>
@@ -223,125 +260,167 @@ h1{
 
 <div class="overlay" id="overlay">
   <div class="winnerWrap">
-    <img class="winnerImg" id="winnerImg">
+    <img class="winnerImg" id="winnerImg" alt="">
     <div class="winnerInfo">
       <div class="babam">🎉 빠——밤!!! 🎉</div>
       <div class="winnerName" id="winnerName"></div>
       <div class="winnerWork" id="winnerWork"></div>
-      <button class="btn" onclick="start()">다시하기</button>
+      <div class="btnRow">
+        <button class="btn btnPrimary" onclick="start()">다시하기</button>
+        <button class="btn btnGhost" onclick="closeWinner()">닫기</button>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
 const CANDIDATES = [
- {work:"알함브라 궁전의 추억", role:"마르꼬", img:"images/marco.jpg"},
- {work:"검색어를 입력하세요 WWW", role:"설지환", img:"images/seoljihwan.jpg"},
- {work:"어쩌다 발견한 하루", role:"백경", img:"images/baekgyeong.jpg"},
- {work:"날씨가 좋으면 찾아가겠어요", role:"이장우", img:"images/leejangwoo.jpg"},
- {work:"도도솔솔라라솔", role:"선우준", img:"images/seonwoojun.jpg"},
- {work:"환혼 1,2", role:"장욱", img:"images/janguuk.jpg"},
- {work:"로얄로더", role:"한태오", img:"images/hantaeo.jpg"},
- {work:"탄금", role:"홍랑", img:"images/hongrang.jpg"},
- {work:"마지막 썸머", role:"백도하", img:"images/baekdoha.jpg"},
- {work:"언니네 산지직송", role:"이재욱 (본체)", img:"images/jaewook_real.jpg"}
+  {work:"알함브라 궁전의 추억", role:"마르꼬", img:"images/marco.jpg"},
+  {work:"검색어를 입력하세요 WWW", role:"설지환", img:"images/seoljihwan.jpg"},
+  {work:"어쩌다 발견한 하루", role:"백경", img:"images/baekgyeong.jpg"},
+  {work:"날씨가 좋으면 찾아가겠어요", role:"이장우", img:"images/leejangwoo.jpg"},
+  {work:"도도솔솔라라솔", role:"선우준", img:"images/seonwoojun.jpg"},
+  {work:"환혼 1,2", role:"장욱", img:"images/janguuk.jpg"},
+  {work:"로얄로더", role:"한태오", img:"images/hantaeo.jpg"},
+  {work:"탄금", role:"홍랑", img:"images/hongrang.jpg"},
+  {work:"마지막 썸머", role:"백도하", img:"images/baekdoha.jpg"},
+  {work:"언니네 산지직송", role:"이재욱 (본체)", img:"images/jaewook_real.jpg"}
 ];
 
 let champion, queue, challenger;
 
 function shuffle(a){
- return [...a].sort(()=>Math.random()-0.5);
+  return [...a].sort(()=>Math.random()-0.5);
 }
 
 function start(){
- document.getElementById("overlay").style.display="none";
- stopConfetti();
+  document.getElementById("overlay").style.display="none";
+  stopConfetti();
 
- const s = shuffle(CANDIDATES);
- champion = s[0];
- queue = s.slice(1);
- next();
+  const s = shuffle(CANDIDATES);
+  champion = s[0];
+  queue = s.slice(1);
+  next();
 }
 
 function next(){
- if(queue.length===0){
-   win();
-   return;
- }
- challenger = queue.shift();
- render();
- document.getElementById("status").innerText =
-   `남은 도전자 ${queue.length}명`;
+  if(queue.length===0){
+    win();
+    return;
+  }
+  challenger = queue.shift();
+  render();
+
+  document.getElementById("status").innerText =
+    `남은 도전자 ${queue.length}명`;
 }
 
 function render(){
- imgA.src = champion.img;
- workA.innerText = champion.work;
- roleA.innerText = champion.role;
+  const imgA = document.getElementById("imgA");
+  const workA = document.getElementById("workA");
+  const roleA = document.getElementById("roleA");
 
- imgB.src = challenger.img;
- workB.innerText = challenger.work;
- roleB.innerText = challenger.role;
+  const imgB = document.getElementById("imgB");
+  const workB = document.getElementById("workB");
+  const roleB = document.getElementById("roleB");
+
+  imgA.src = champion.img;
+  workA.innerText = champion.work;
+  roleA.innerText = champion.role;
+
+  imgB.src = challenger.img;
+  workB.innerText = challenger.work;
+  roleB.innerText = challenger.role;
 }
 
-cardA.onclick = ()=> next();
-cardB.onclick = ()=>{
- champion = challenger;
- next();
+document.getElementById("cardA").onclick = ()=> next();
+document.getElementById("cardB").onclick = ()=>{
+  champion = challenger;
+  next();
 };
 
 function win(){
- document.getElementById("winnerImg").src = champion.img;
- document.getElementById("winnerName").innerText = champion.role;
- document.getElementById("winnerWork").innerText = champion.work;
- document.getElementById("overlay").style.display="flex";
- startConfetti();
+  document.getElementById("winnerImg").src = champion.img;
+  document.getElementById("winnerName").innerText = champion.role;
+  document.getElementById("winnerWork").innerText = champion.work;
+
+  document.getElementById("overlay").style.display="flex";
+  startConfetti();
+}
+
+function closeWinner(){
+  document.getElementById("overlay").style.display="none";
+  stopConfetti();
 }
 
 /* ===== 컨페티 ===== */
 let raf;
 function startConfetti(){
- const c = document.getElementById("confetti");
- c.style.display="block";
- const ctx = c.getContext("2d");
+  const c = document.getElementById("confetti");
+  c.style.display="block";
+  const ctx = c.getContext("2d");
 
- function resize(){
-   c.width = innerWidth;
-   c.height = innerHeight;
- }
- resize();
+  function resize(){
+    c.width = innerWidth;
+    c.height = innerHeight;
+  }
+  resize();
 
- const pieces = Array.from({length:260},()=>({
-   x:Math.random()*c.width,
-   y:Math.random()*-c.height,
-   vy:3+Math.random()*4,
-   size:6+Math.random()*8,
-   hue:Math.random()*360
- }));
+  const pieces = Array.from({length:320},()=>({
+    x:Math.random()*c.width,
+    y:Math.random()*-c.height,
+    vy:3+Math.random()*4.5,
+    vx:-1.2+Math.random()*2.4,
+    size:5+Math.random()*9,
+    hue:Math.random()*360,
+    rot:Math.random()*Math.PI,
+    vr:-0.12+Math.random()*0.24
+  }));
 
- function draw(){
-   ctx.clearRect(0,0,c.width,c.height);
-   pieces.forEach(p=>{
-     p.y += p.vy;
-     ctx.fillStyle = `hsl(${p.hue},90%,60%)`;
-     ctx.fillRect(p.x,p.y,p.size,p.size);
-     if(p.y>c.height) p.y=-20;
-   });
-   raf=requestAnimationFrame(draw);
- }
- draw();
+  const endAt = performance.now() + 2600;
 
- setTimeout(stopConfetti, 2600);
+  function draw(t){
+    ctx.clearRect(0,0,c.width,c.height);
+    for(const p of pieces){
+      p.x += p.vx;
+      p.y += p.vy;
+      p.rot += p.vr;
+
+      ctx.save();
+      ctx.translate(p.x,p.y);
+      ctx.rotate(p.rot);
+      ctx.fillStyle = `hsl(${p.hue},90%,60%)`;
+      ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size*1.4);
+      ctx.restore();
+
+      if(t < endAt){
+        if(p.y > c.height + 30 || p.x < -30 || p.x > c.width + 30){
+          p.x = Math.random()*c.width;
+          p.y = -20 - Math.random()*200;
+        }
+      }
+    }
+
+    if(t < endAt){
+      raf = requestAnimationFrame(draw);
+    }else{
+      setTimeout(stopConfetti, 450);
+    }
+  }
+  raf = requestAnimationFrame(draw);
 }
 
 function stopConfetti(){
- cancelAnimationFrame(raf);
- document.getElementById("confetti").style.display="none";
+  if(raf) cancelAnimationFrame(raf);
+  raf = null;
+  const c = document.getElementById("confetti");
+  if(!c) return;
+  const ctx = c.getContext("2d");
+  ctx.clearRect(0,0,c.width,c.height);
+  c.style.display="none";
 }
 
 start();
 </script>
-
 </body>
 </html>
-
